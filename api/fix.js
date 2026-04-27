@@ -13,35 +13,39 @@ Return:
 2. Fix
 3. Steps
 4. Code if needed
-Be direct.
+Be direct and practical.
 `;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
+        model: "gpt-4.1-mini",
+        input: prompt
       })
     });
 
     const data = await response.json();
 
-    if (!data.choices) {
-      return res.status(500).json({
-        result: "AI error",
-        debug: data
-      });
+    console.log("OPENAI RESPONSE:", data);
+
+    // zabezpieczenie jak struktura się zmieni
+    let outputText = "Brak odpowiedzi AI";
+
+    if (data.output && data.output[0] && data.output[0].content) {
+      outputText = data.output[0].content[0].text;
     }
 
     return res.status(200).json({
-      result: data.choices[0].message.content
+      result: outputText
     });
 
   } catch (error) {
+    console.error("ERROR:", error);
+
     return res.status(500).json({
       result: "Server error",
       error: error.message
